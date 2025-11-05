@@ -1,0 +1,6 @@
+services:
+  fundo.loan.api:
+    image: ${DOCKER_REGISTRY-}fundoloanapi
+    build:
+      context: .
+      dockerfile: Fundo.Loan.Api/Dockerfile
