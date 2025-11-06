@@ -1,6 +1,48 @@
+version: "3.9"
+
+name: fundo-loan
+
+networks:
+  app-net:
+    driver: bridge
+
 services:
-  fundo.loan.api:
-    image: ${DOCKER_REGISTRY-}fundoloanapi
+  fundo.mssql:
+    container_name: fundo-mssql
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "P@ssw0rd_ChangeMe_123!"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./.containers/sqlserver:/var/opt/mssql # keeps DB files under the repo
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"P@ssw0rd_ChangeMe_123!\" -Q \"SELECT 1\" -C" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  fundo.api:
+    container_name: fundo-api
+    image: fundo-loan-api:dev                      
     build:
-      context: .
-      dockerfile: Fundo.Loan.Api/Dockerfile
+      context: ./apps/backend/src/Fundo.Loan.Api
+      dockerfile: Dockerfile
+    depends_on:
+      fundo.mssql:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__Default: "Server=mssql,1433;Database=FundoLoan;User ID=sa;Password=P@ssw0rd_ChangeMe_123!;TrustServerCertificate=true;Encrypt=false"
+    ports:
+      - "8080:8080"
+    networks:
+      - app-net
+    restart: unless-stopped
