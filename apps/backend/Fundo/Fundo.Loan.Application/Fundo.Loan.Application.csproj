@@ -1,7 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
+	  <PackageReference Include="FluentValidation" />
+	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+	  <PackageReference Include="MediatR" />
+	  <PackageReference Include="Microsoft.AspNetCore.Identity" />
+	  <PackageReference Include="Microsoft.Extensions.Identity.Core" />
+	  <PackageReference Include="Microsoft.Extensions.Identity.Stores" />
+	  <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\Fundo.Loan.Domain\Fundo.Loan.Domain.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Commands\" />
+	  <Folder Include="Queries\" />
 	</ItemGroup>
 
 </Project>

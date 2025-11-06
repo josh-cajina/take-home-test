@@ -1,10 +1,12 @@
+using Fundo.Loan.Api;
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-
-builder.Services.AddOpenApi();
+builder
+    .AddDatabaseServices()
+    .AddApiServices()
+    .AddCORS()
+    .AddApplicationServices();
 
 WebApplication app = builder.Build();
 
