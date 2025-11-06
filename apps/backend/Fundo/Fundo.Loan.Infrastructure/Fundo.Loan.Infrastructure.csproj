@@ -5,4 +5,9 @@
 		<ProjectReference Include="..\Fundo.Loan.Domain\Fundo.Loan.Domain.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" />
+	</ItemGroup>
+
 </Project>
