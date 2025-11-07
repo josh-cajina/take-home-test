@@ -1,28 +1,23 @@
 ﻿using System.Reflection;
 using FluentValidation;
-using Fundo.Loan.Application.Abstractions;
-using Fundo.Loan.Application.Pipelines;
-using Fundo.Loan.Application.Services;
+using Fundo.Loan.Application.Common.Behaviors;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Fundo.Loan.Application;
+
 public static class DependencyInjection
 {
-    public static IServiceCollection AddCQRS(this IServiceCollection services)
+    public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        var applicationAssembly = Assembly.GetExecutingAssembly();
+        // Register MediatR
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(applicationAssembly));
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
-        services.AddValidatorsFromAssembly(applicationAssembly);
+        // Register FluentValidation
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-        return services;
-    }
-
-    public static IServiceCollection AddIdentityServices(this IServiceCollection services)
-    {
-        services.AddScoped<IIdentityService, IdentityService>();
+        // Register MediatR pipeline behavior for validation
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
         return services;
     }
