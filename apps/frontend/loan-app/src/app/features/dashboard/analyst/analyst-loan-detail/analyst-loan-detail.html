@@ -1,0 +1,61 @@
+@if (loan(); as l) {
+  <h2 class="text-3xl font-bold mb-4">Details</h2>
+
+  <div class="grid md:grid-cols-2 gap-4 mb-6">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h3 class="card-title">Info</h3>
+        <p><strong>Requester:</strong> {{ l.requesterFullName }}</p>
+        <p><strong>Amount:</strong> {{ l.requestedAmount | currency }}</p>
+        <p><strong>Balance:</strong> {{ l.currentBalance | currency }}</p>
+        <p><strong>Status:</strong> <span class="badge">{{ l.statusName }}</span></p>
+      </div>
+    </div>
+
+    @if (l.statusName === 'Approved' && l.currentBalance > 0) {
+      <div class="card bg-base-100 shadow-xl">
+        <form [formGroup]="paymentForm" (ngSubmit)="submitPay()" class="card-body">
+          <h3 class="card-title">Payment</h3>
+          <div class="join">
+            <input type="number" formControlName="amount" class="input input-bordered join-item w-full" placeholder="0.00" />
+            <button class="btn btn-primary join-item" [disabled]="paymentForm.invalid">Pay</button>
+          </div>
+        </form>
+      </div>
+    }
+
+    @if (['Pending', 'Under Review'].includes(l.statusName)) {
+      <div class="card bg-base-100 shadow-xl">
+        <form [formGroup]="statusForm" (ngSubmit)="submitStatus()" class="card-body">
+          <h3 class="card-title">Decision</h3>
+          <select formControlName="newStatusId" class="select select-bordered mb-2">
+            <option [ngValue]="3">Approve</option>
+            <option [ngValue]="4">Reject</option>
+          </select>
+          <textarea formControlName="comment" class="textarea textarea-bordered mb-2" placeholder="Reason"></textarea>
+          <button class="btn btn-accent" [disabled]="statusForm.invalid">Submit</button>
+        </form>
+      </div>
+    }
+  </div>
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h3 class="card-title">History</h3>
+      <div class="overflow-x-auto">
+        <table class="table table-xs">
+          <thead><tr><th>Date</th><th>New Status</th><th>Comment</th></tr></thead>
+          <tbody>
+            @for (h of l.history; track h.id) {
+              <tr>
+                <td>{{ h.timestamp | date:'short' }}</td>
+                <td>{{ h.newStatus }}</td>
+                <td>{{ h.comment }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+}

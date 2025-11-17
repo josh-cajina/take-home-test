@@ -1,0 +1,16 @@
+<h2 class="text-2xl font-bold mb-6">Unassigned Loans</h2>
+<div class="overflow-x-auto bg-base-100 rounded-box shadow">
+  <table class="table">
+    <thead><tr><th>Requester</th><th>Amount</th><th>Date</th><th>Action</th></tr></thead>
+    <tbody>
+      @for (l of loans(); track l.id) {
+        <tr>
+          <td>{{ l.requesterFullName }}</td>
+          <td>{{ l.requestedAmount | currency }}</td>
+          <td>{{ l.requestedDate | date }}</td>
+          <td><button class="btn btn-sm btn-primary" (click)="claim(l.id)">Claim</button></td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

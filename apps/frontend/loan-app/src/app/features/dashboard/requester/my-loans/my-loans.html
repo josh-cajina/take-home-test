@@ -1,0 +1,18 @@
+<h2 class="text-2xl font-bold mb-6">My Loan Requests</h2>
+<div class="overflow-x-auto bg-base-100 rounded-box shadow">
+  <table class="table table-zebra">
+    <thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>Balance</th></tr></thead>
+    <tbody>
+      @for (loan of loans(); track loan.id) {
+        <tr>
+          <td>{{ loan.requestedDate | date:'shortDate' }}</td>
+          <td>{{ loan.requestedAmount | currency }}</td>
+          <td><span class="badge">{{ loan.statusName }}</span></td>
+          <td>{{ loan.currentBalance | currency }}</td>
+        </tr>
+      } @empty {
+        <tr><td colspan="4" class="text-center">No records found.</td></tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,20 @@
+<h2 class="text-2xl font-bold mb-6">New Loan Request</h2>
+<div class="card bg-base-100 max-w-lg shadow-xl">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="card-body">
+    <div class="form-control">
+      <label class="label">Amount</label>
+      <input type="number" formControlName="requestedAmount" class="input input-bordered" />
+    </div>
+    <div class="form-control">
+      <label class="label">Term (Months)</label>
+      <input type="number" formControlName="termInMonths" class="input input-bordered" />
+    </div>
+    <div class="form-control">
+      <label class="label">Purpose</label>
+      <textarea formControlName="purpose" class="textarea textarea-bordered"></textarea>
+    </div>
+    <div class="card-actions justify-end mt-4">
+      <button class="btn btn-primary" [disabled]="form.invalid">Submit</button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,31 @@
+<div class="drawer lg:drawer-open">
+  <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+  <div class="drawer-content flex flex-col p-6">
+    <div class="lg:hidden flex items-center pb-4">
+      <label for="my-drawer" class="btn btn-square btn-ghost">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </label>
+      <span class="text-xl font-bold ml-2">Loan App</span>
+    </div>
+    <router-outlet />
+  </div>
+  <div class="drawer-side z-20">
+    <label for="my-drawer" class="drawer-overlay"></label>
+    <ul class="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
+      <li class="text-2xl font-bold px-4 mb-4">Loan App</li>
+      @if (auth.hasRole('Requester')) {
+        <li><a routerLink="/dashboard/requester/my-loans" routerLinkActive="active">My Loans</a></li>
+        <li><a routerLink="/dashboard/requester/new-loan" routerLinkActive="active">Request Loan</a></li>
+      }
+      @if (auth.hasRole('Analyst')) {
+        <li><a routerLink="/dashboard/analyst/unassigned" routerLinkActive="active">Unassigned</a></li>
+        <li><a routerLink="/dashboard/analyst/assigned" routerLinkActive="active">My Queue</a></li>
+      }
+      @if (auth.hasRole('Admin')) {
+        <li><a routerLink="/dashboard/admin/user-management" routerLinkActive="active">Users</a></li>
+      }
+      <div class="divider"></div>
+      <li><button (click)="auth.logout()">Logout</button></li>
+    </ul>
+  </div>
+</div>
