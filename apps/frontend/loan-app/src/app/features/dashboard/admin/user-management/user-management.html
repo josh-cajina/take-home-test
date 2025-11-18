@@ -1,14 +1,28 @@
 <h2 class="text-2xl font-bold mb-6">User Management</h2>
 <div class="overflow-x-auto bg-base-100 rounded-box shadow">
   <table class="table">
-    <thead><tr><th>Name</th><th>Email</th><th>Roles</th></tr></thead>
+    <thead><tr><th>Name</th><th>Email</th><th>Roles</th><th>Actions</th></tr></thead>
     <tbody>
       @for (u of users(); track u.appUserId) {
-        <tr>
-          <td>{{ u.firstName }} {{ u.lastName }}</td>
+        <tr class="hover">
+          <td>
+            <div class="font-bold">{{ u.firstName }} {{ u.lastName }}</div>
+          </td>
           <td>{{ u.email }}</td>
           <td>
-            @for (r of u.roles; track r) { <span class="badge badge-outline mr-1">{{ r }}</span> }
+            @for (r of u.roles; track r) {
+              <span class="badge badge-sm badge-outline mr-1"
+                [class.badge-primary]="r === 'Admin'"
+                [class.badge-secondary]="r === 'Analyst'"
+                [class.badge-accent]="r === 'Requester'">
+                {{ r }}
+              </span>
+            }
+          </td>
+          <td>
+            <a [routerLink]="['../users', u.appUserId, 'edit']" class="btn btn-xs btn-ghost btn-outline">
+              Edit
+            </a>
           </td>
         </tr>
       }
