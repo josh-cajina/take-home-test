@@ -1,12 +1,18 @@
 import { Component, ChangeDetectionStrategy, inject, Input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { LoanService } from '../../../../core/services/loan';
 import { LoanDetails } from '../../../../core/models/loan';
 
 @Component({
   selector: 'app-analyst-loan-detail',
-  imports: [CommonModule, ReactiveFormsModule],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink
+  ],
   templateUrl: './analyst-loan-detail.html',
   styleUrl: './analyst-loan-detail.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -17,7 +23,7 @@ export class AnalystLoanDetail implements OnInit {
 
   @Input() id!: string;
   loan = signal<LoanDetails | null>(null);
-  error = signal<string | null>(null); // Added error signal
+  error = signal<string | null>(null);
 
   paymentForm = this.fb.group({ amount: [0, [Validators.required, Validators.min(0.01)]] });
   statusForm = this.fb.group({ newStatusId: [3, Validators.required], comment: ['', Validators.required] });
@@ -25,13 +31,9 @@ export class AnalystLoanDetail implements OnInit {
   ngOnInit() { this.load(); }
 
   load() {
-    this.error.set(null);
     this.loanService.getLoanById(this.id).subscribe({
-      next: (d) => this.loan.set(d),
-      error: (err) => {
-        console.error(err);
-        this.error.set('Failed to load loan details. Please try again.');
-      }
+      next: d => this.loan.set(d),
+      error: err => this.error.set(err.error?.detail || 'Failed to load')
     });
   }
 

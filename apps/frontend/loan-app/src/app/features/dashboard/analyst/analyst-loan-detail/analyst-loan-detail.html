@@ -1,61 +1,166 @@
-@if (loan(); as l) {
-  <h2 class="text-3xl font-bold mb-4">Details</h2>
+<div class="container mx-auto p-4 lg:p-8 max-w-6xl">
 
-  <div class="grid md:grid-cols-2 gap-4 mb-6">
-    <div class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h3 class="card-title">Info</h3>
-        <p><strong>Requester:</strong> {{ l.requesterFullName }}</p>
-        <p><strong>Amount:</strong> {{ l.requestedAmount | currency }}</p>
-        <p><strong>Balance:</strong> {{ l.currentBalance | currency }}</p>
-        <p><strong>Status:</strong> <span class="badge">{{ l.statusName }}</span></p>
+  @if (error()) {
+    <div role="alert" class="alert alert-error mb-6 shadow-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (loan(); as l) {
+
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-base-300 pb-6">
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="text-3xl font-bold">Loan #{{ l.id.substring(0, 8) }}</h1>
+          <div class="badge badge-lg font-semibold uppercase tracking-wider text-xs"
+             [class.badge-warning]="l.statusName === 'Pending'"
+             [class.badge-info]="l.statusName === 'Under Review'"
+             [class.badge-success]="l.statusName === 'Approved'"
+             [class.badge-error]="l.statusName === 'Rejected'">
+          {{ l.statusName }}
+        </div>
+        </div>
+        <p class="text-base-content/60 mt-1">Requested on {{ l.requestedDate | date:'mediumDate' }}</p>
       </div>
+
+      <a routerLink="/dashboard/analyst/assigned" class="btn btn-ghost btn-sm hover:bg-base-200 gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Back to Queue
+      </a>
     </div>
 
-    @if (l.statusName === 'Approved' && l.currentBalance > 0) {
-      <div class="card bg-base-100 shadow-xl">
-        <form [formGroup]="paymentForm" (ngSubmit)="submitPay()" class="card-body">
-          <h3 class="card-title">Payment</h3>
-          <div class="join">
-            <input type="number" formControlName="amount" class="input input-bordered join-item w-full" placeholder="0.00" />
-            <button class="btn btn-primary join-item" [disabled]="paymentForm.invalid">Pay</button>
+    <div class="grid lg:grid-cols-3 gap-8">
+
+      <div [class.lg:col-span-2]="['Pending', 'Under Review', 'Approved'].includes(l.statusName) && l.currentBalance > 0"
+           [class.lg:col-span-3]="l.statusName === 'Rejected' || l.currentBalance === 0"
+           class="flex flex-col gap-8">
+
+        <div class="card bg-base-100 shadow-md border border-base-200">
+          <div class="card-body">
+            <h3 class="card-title text-sm font-bold uppercase text-base-content/40 mb-4 tracking-widest">Application Details</h3>
+            <div class="grid sm:grid-cols-2 gap-x-8 gap-y-6">
+              <div>
+                <div class="text-xs font-bold text-base-content/60 mb-1">REQUESTER</div>
+                <div class="text-lg font-medium">{{ l.requesterFullName }}</div>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-base-content/60 mb-1">TERM</div>
+                <div class="text-lg font-medium">{{ l.termInMonths }} Months</div>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-base-content/60 mb-1">REQUESTED AMOUNT</div>
+                <div class="text-2xl font-bold text-primary">{{ l.requestedAmount | currency }}</div>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-base-content/60 mb-1">CURRENT BALANCE</div>
+                <div class="text-2xl font-bold" [class.text-success]="l.currentBalance === 0">{{ l.currentBalance | currency }}</div>
+              </div>
+              <div class="sm:col-span-2">
+                <div class="text-xs font-bold text-base-content/60 mb-2">PURPOSE</div>
+                <div class="p-4 bg-base-200/50 rounded-lg text-base italic leading-relaxed border border-base-200">"{{ l.purpose }}"</div>
+              </div>
+            </div>
           </div>
-        </form>
-      </div>
-    }
+        </div>
 
-    @if (['Pending', 'Under Review'].includes(l.statusName)) {
-      <div class="card bg-base-100 shadow-xl">
-        <form [formGroup]="statusForm" (ngSubmit)="submitStatus()" class="card-body">
-          <h3 class="card-title">Decision</h3>
-          <select formControlName="newStatusId" class="select select-bordered mb-2">
-            <option [ngValue]="3">Approve</option>
-            <option [ngValue]="4">Reject</option>
-          </select>
-          <textarea formControlName="comment" class="textarea textarea-bordered mb-2" placeholder="Reason"></textarea>
-          <button class="btn btn-accent" [disabled]="statusForm.invalid">Submit</button>
-        </form>
-      </div>
-    }
-  </div>
+        <div class="card bg-base-100 shadow-md border border-base-200">
+          <div class="card-body p-0 sm:p-6">
+            <h3 class="card-title text-sm font-bold uppercase text-base-content/40 mb-4 px-6 pt-6 sm:px-0 sm:pt-0 tracking-widest">Status History</h3>
+            <div class="overflow-x-auto">
+              <table class="table table-zebra">
+                <thead><tr><th>Date</th><th>Status Change</th><th>Comment</th></tr></thead>
+                <tbody>
+                  @for (h of l.history; track h.id) {
+                    <tr>
+                      <td class="whitespace-nowrap opacity-70 text-xs">{{ h.timestamp | date:'short' }}</td>
+                      <td><span class="badge badge-sm badge-outline font-semibold">{{ h.newStatus }}</span></td>
+                      <td class="text-sm">{{ h.comment }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-  <div class="card bg-base-100 shadow-xl">
-    <div class="card-body">
-      <h3 class="card-title">History</h3>
-      <div class="overflow-x-auto">
-        <table class="table table-xs">
-          <thead><tr><th>Date</th><th>New Status</th><th>Comment</th></tr></thead>
-          <tbody>
-            @for (h of l.history; track h.id) {
-              <tr>
-                <td>{{ h.timestamp | date:'short' }}</td>
-                <td>{{ h.newStatus }}</td>
-                <td>{{ h.comment }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        @if (l.payments.length > 0) {
+          <div class="card bg-base-100 shadow-md border border-base-200">
+            <div class="card-body p-0 sm:p-6">
+              <h3 class="card-title text-sm font-bold uppercase text-base-content/40 mb-4 px-6 pt-6 sm:px-0 sm:pt-0 tracking-widest">Payment Log</h3>
+              <div class="overflow-x-auto">
+                <table class="table">
+                  <thead><tr><th>Date</th><th>Amount</th><th>Processed By</th></tr></thead>
+                  <tbody>
+                    @for (p of l.payments; track p.id) {
+                      <tr>
+                        <td class="whitespace-nowrap opacity-70 text-xs">{{ p.paymentDate | date:'short' }}</td>
+                        <td class="text-success font-bold">+{{ p.amountPaid | currency }}</td>
+                        <td class="text-sm">{{ p.processedBy }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
       </div>
+
+      @if (['Pending', 'Under Review', 'Approved'].includes(l.statusName) && l.currentBalance > 0) {
+        <div class="lg:col-span-1">
+
+          @if (['Pending', 'Under Review'].includes(l.statusName)) {
+            <div class="card bg-base-100 shadow-xl border-t-4 border-t-primary sticky top-6">
+              <div class="card-body">
+                <h3 class="card-title text-xl mb-1">Review Application</h3>
+                <p class="text-sm text-base-content/60 mb-6">Make a decision on this loan request.</p>
+                <form [formGroup]="statusForm" (ngSubmit)="submitStatus()" class="flex flex-col gap-4">
+                  <div class="form-control">
+                    <label class="label py-0 mb-1"><span class="label-text font-semibold">Decision</span></label>
+                    <select formControlName="newStatusId" class="select select-bordered w-full">
+                      <option [ngValue]="3">Approve</option>
+                      <option [ngValue]="4">Reject</option>
+                    </select>
+                  </div>
+                  <div class="form-control">
+                    <label class="label py-0 mb-1"><span class="label-text font-semibold">Reason / Comment</span></label>
+                    <textarea formControlName="comment" class="textarea textarea-bordered h-32 w-full leading-relaxed" placeholder="Please provide a justification..."></textarea>
+                  </div>
+                  <button class="btn btn-primary w-full mt-2 shadow-lg" [disabled]="statusForm.invalid">Submit Decision</button>
+                </form>
+              </div>
+            </div>
+          }
+
+          @if (l.statusName === 'Approved') {
+            <div class="card bg-base-100 shadow-xl border-t-4 border-t-success sticky top-6">
+              <div class="card-body">
+                <h3 class="card-title text-xl mb-1">Record Payment</h3>
+                <p class="text-sm text-base-content/60 mb-6">Log a payment received from the requester.</p>
+                <form [formGroup]="paymentForm" (ngSubmit)="submitPay()" class="flex flex-col gap-4">
+                  <div class="form-control">
+                     <label class="label py-0 mb-1"><span class="label-text font-semibold">Amount Received</span></label>
+                     <label class="input input-bordered flex items-center gap-2">
+                        <span class="text-base-content/50 font-bold">$</span>
+                        <input type="number" formControlName="amount" class="grow border-none focus:ring-0 p-0" placeholder="0.00" />
+                     </label>
+                  </div>
+                  <button class="btn btn-success text-white w-full mt-2 shadow-lg" [disabled]="paymentForm.invalid">Process Payment</button>
+                </form>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
     </div>
-  </div>
-}
+  } @else if (!error()) {
+    <div class="flex flex-col justify-center items-center h-[60vh] gap-4">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+        <p class="text-base-content/50 animate-pulse font-medium">Loading loan details...</p>
+    </div>
+  }
+</div>
