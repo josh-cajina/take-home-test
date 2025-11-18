@@ -1,37 +1,124 @@
-<div class="hero min-h-screen bg-base-200">
-  <div class="card w-full max-w-md shadow-2xl bg-base-100 my-10">
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="card-body">
-      <h1 class="text-2xl font-bold text-center">Register</h1>
-      <div class="grid grid-cols-2 gap-2">
-        <div class="form-control">
-          <label class="label">First Name</label>
-          <input type="text" formControlName="firstName" class="input input-bordered" />
+<div class="min-h-screen flex items-center justify-center bg-base-200">
+  <div class="card w-full max-w-md bg-base-100 shadow-2xl border border-base-200">
+    <div class="card-body">
+      <h2 class="card-title text-3xl font-bold text-center mb-6 justify-center">Register</h2>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">First Name</span>
+            </label>
+            <input
+              type="text"
+              placeholder="John"
+              formControlName="firstName"
+              class="input input-bordered w-full"
+              [class.input-error]="isFieldInvalid('firstName')"
+            />
+            @if (isFieldInvalid('firstName')) {
+              <label class="label h-auto py-1">
+                <span class="label-text-alt text-error">First name is required</span>
+              </label>
+            }
+          </div>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Last Name</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Doe"
+              formControlName="lastName"
+              class="input input-bordered w-full"
+              [class.input-error]="isFieldInvalid('lastName')"
+            />
+            @if (isFieldInvalid('lastName')) {
+              <label class="label h-auto py-1">
+                <span class="label-text-alt text-error">Last name is required</span>
+              </label>
+            }
+          </div>
         </div>
+
         <div class="form-control">
-          <label class="label">Last Name</label>
-          <input type="text" formControlName="lastName" class="input input-bordered" />
+          <label class="label">
+            <span class="label-text">Email</span>
+          </label>
+          <input
+            type="email"
+            placeholder="email@example.com"
+            formControlName="email"
+            class="input input-bordered w-full"
+            [class.input-error]="isFieldInvalid('email')"
+          />
+          @if (isFieldInvalid('email')) {
+            <label class="label h-auto py-1">
+              <span class="label-text-alt text-error">Valid email is required</span>
+            </label>
+          }
         </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Password</span>
+          </label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            formControlName="password"
+            class="input input-bordered w-full"
+            [class.input-error]="isFieldInvalid('password')"
+          />
+          @if (isFieldInvalid('password')) {
+            <label class="label h-auto py-1">
+              <span class="label-text-alt text-error text-wrap leading-tight">
+                Password must be strong (min 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special)
+              </span>
+            </label>
+          }
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Role</span>
+          </label>
+          <select
+            formControlName="role"
+            class="select select-bordered w-full"
+            [class.select-error]="isFieldInvalid('role')"
+          >
+            <option value="Requester">Requester</option>
+            <option value="Analyst">Analyst</option>
+          </select>
+          @if (isFieldInvalid('role')) {
+            <label class="label h-auto py-1">
+              <span class="label-text-alt text-error">Role is required</span>
+            </label>
+          }
+        </div>
+
+        @if (errorMessage()) {
+          <div role="alert" class="alert alert-error mt-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <div class="form-control mt-6 flex justify-center w-full">
+          <button type="submit" class="btn btn-primary w-full" [disabled]="form.invalid || isSubmitting()">
+            @if (isSubmitting()) {
+              <span class="loading loading-spinner loading-xs"></span>
+            }
+            Register
+          </button>
+        </div>
+      </form>
+
+      <div class="text-center mt-6">
+        <a routerLink="../login" class="link link-hover text-sm">Back to Login</a>
       </div>
-      <div class="form-control">
-        <label class="label">Email</label>
-        <input type="email" formControlName="email" class="input input-bordered" />
-      </div>
-      <div class="form-control">
-        <label class="label">Password</label>
-        <input type="password" formControlName="password" class="input input-bordered" />
-      </div>
-      <div class="form-control">
-        <label class="label">Role</label>
-        <select formControlName="role" class="select select-bordered">
-          <option value="Requester">Requester</option>
-          <option value="Analyst">Analyst</option>
-        </select>
-      </div>
-      @if (error()) { <div class="text-error text-sm">{{ error() }}</div> }
-      <div class="form-control mt-6">
-        <button class="btn btn-primary" [disabled]="form.invalid">Register</button>
-      </div>
-      <a routerLink="/auth/login" class="link link-hover text-center mt-2">Back to Login</a>
-    </form>
+    </div>
   </div>
 </div>

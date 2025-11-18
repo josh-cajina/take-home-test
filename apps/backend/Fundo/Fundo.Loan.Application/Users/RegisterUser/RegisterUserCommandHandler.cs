@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using System.Transactions;
+using FluentValidation;
+using FluentValidation.Results;
 using Fundo.Loan.Application.Common.Interfaces;
 using Fundo.Loan.Application.Users.Common;
 using Fundo.Loan.Domain.Constants;
@@ -25,27 +27,31 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, A
 
     public async Task<AuthResponse> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        // 1. Create the Identity login
+        using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+
         AuthResult authResult = await _identityService.RegisterUserAsync(request.Email, request.Password);
 
         if (!authResult.Succeeded)
         {
-            throw new ValidationException(string.Join("\n", authResult.Errors));
+            IEnumerable<ValidationFailure> failures = authResult.Errors
+                .Select(errorMsg => new ValidationFailure("Identity", errorMsg));
+
+            throw new ValidationException(failures);
         }
 
-        // 2. Create the AppUser profile
         var appUser = new AppUser
         {
             Id = Guid.NewGuid(),
             IdentityId = authResult.UserId,
             FirstName = request.FirstName,
             LastName = request.LastName,
+            DateOfBirth = DateTime.UtcNow.AddYears(-20),
+            Address = "Not Provided"
         };
 
         _appContext.AppUsers.Add(appUser);
         await _appContext.SaveChangesAsync(cancellationToken);
 
-        // 3. Assign Role
         string targetRole = string.IsNullOrWhiteSpace(request.Role) ? Roles.Requester : request.Role;
 
         if (targetRole.Equals(Roles.Admin, StringComparison.OrdinalIgnoreCase))
@@ -58,9 +64,10 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, A
             await _identityService.AddUserToRoleAsync(authResult.UserId, targetRole);
         }
 
-        // 4. Generate JWT token
         IList<string> roles = await _identityService.GetUserRolesAsync(authResult.UserId);
         string token = _jwtTokenProvider.GenerateToken(authResult.UserId, request.Email, roles);
+
+        scope.Complete();
 
         return new AuthResponse
         {

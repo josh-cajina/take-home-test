@@ -1,6 +1,7 @@
 ﻿using Fundo.Loan.Application.Common.Interfaces;
 using Fundo.Loan.Application.Loans.Dtos;
 using Fundo.Loan.Domain.Constants;
+using Fundo.Loan.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,21 +20,20 @@ public class GetLoanByIdQueryHandler : IRequestHandler<GetLoanByIdQuery, LoanDet
 
     public async Task<LoanDetailsDto> Handle(GetLoanByIdQuery request, CancellationToken cancellationToken)
     {
-        Domain.Entities.LoanRequest? loan = await _context.LoanRequests.AsNoTracking()
-            .Include(loanRequest => loanRequest.Status)
-            .Include(loanRequest => loanRequest.Requester)
-            .Include(loanRequest => loanRequest.Analyst)
-            .Include(loanRequest => loanRequest.History).ThenInclude(history => history.OldStatus)
-            .Include(loanRequest => loanRequest.History).ThenInclude(history => history.NewStatus)
-            .Include(loanRequest => loanRequest.Payments).ThenInclude(payment => payment.ProcessedByUser)
-            .FirstOrDefaultAsync(loanRequest => loanRequest.Id == request.Id, cancellationToken);
+        LoanRequest? loan = await _context.LoanRequests.AsNoTracking()
+            .Include(l => l.Status)
+            .Include(l => l.Requester)
+            .Include(l => l.Analyst)
+            .Include(l => l.History).ThenInclude(h => h.OldStatus)
+            .Include(l => l.History).ThenInclude(h => h.NewStatus)
+            .Include(l => l.Payments).ThenInclude(p => p.ProcessedByUser)
+            .FirstOrDefaultAsync(l => l.Id == request.Id, cancellationToken);
 
         if (loan == null)
         {
-            throw new Exception("Loan not found."); // Use custom NotFoundException
+            throw new Exception("Loan not found.");
         }
 
-        // --- GOVERNANCE CHECK ---
         Guid appUserId = await _currentUserService.GetAppUserIdAsync();
         bool hasAccess = false;
 
@@ -54,10 +54,9 @@ public class GetLoanByIdQueryHandler : IRequestHandler<GetLoanByIdQuery, LoanDet
 
         if (!hasAccess)
         {
-            throw new Exception("You do not have permission to view this loan."); // Use custom ForbiddenException
+            throw new Exception("You do not have permission to view this loan.");
         }
 
-        // --- Manual Mapping (Use AutoMapper in production) ---
         return new LoanDetailsDto
         {
             Id = loan.Id,
@@ -71,21 +70,25 @@ public class GetLoanByIdQueryHandler : IRequestHandler<GetLoanByIdQuery, LoanDet
             RequesterFullName = $"{loan.Requester.FirstName} {loan.Requester.LastName}",
             AnalystFullName = loan.Analyst != null ? $"{loan.Analyst.FirstName} {loan.Analyst.LastName}" : "Unassigned",
 
-            History = [.. loan.History.Select(hist => new LoanHistoryDto
+            History = loan.History.Select(hist => new LoanHistoryDto
             {
                 Id = hist.Id,
                 Comment = hist.Comment,
                 Timestamp = hist.Timestamp,
-                OldStatus = hist.OldStatus.Name,
+                // FIX IS HERE: Use ?.Name to safely handle nulls
+                OldStatus = hist.OldStatus?.Name ?? "N/A",
                 NewStatus = hist.NewStatus.Name
-            })],
+            }).ToList(),
 
             Payments = loan.Payments.Select(payment => new PaymentDto
             {
                 Id = payment.Id,
                 AmountPaid = payment.AmountPaid,
                 PaymentDate = payment.PaymentDate,
-                ProcessedBy = $"{payment.ProcessedByUser.FirstName} {payment.ProcessedByUser.LastName}"
+                // Safety check here too just in case
+                ProcessedBy = payment.ProcessedByUser != null
+                    ? $"{payment.ProcessedByUser.FirstName} {payment.ProcessedByUser.LastName}"
+                    : "Unknown"
             }).ToList()
         };
     }

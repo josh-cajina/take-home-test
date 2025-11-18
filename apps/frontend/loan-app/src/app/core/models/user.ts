@@ -12,3 +12,11 @@ export interface AdminUserView {
   lastName: string;
   roles: string[];
 }
+
+export interface UserProfile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  address: string;
+  dateOfBirth: string;
+}

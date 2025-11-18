@@ -6,7 +6,6 @@ import { LoanDetails } from '../../../../core/models/loan';
 
 @Component({
   selector: 'app-analyst-loan-detail',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './analyst-loan-detail.html',
   styleUrl: './analyst-loan-detail.css',
@@ -18,13 +17,23 @@ export class AnalystLoanDetail implements OnInit {
 
   @Input() id!: string;
   loan = signal<LoanDetails | null>(null);
+  error = signal<string | null>(null); // Added error signal
 
   paymentForm = this.fb.group({ amount: [0, [Validators.required, Validators.min(0.01)]] });
   statusForm = this.fb.group({ newStatusId: [3, Validators.required], comment: ['', Validators.required] });
 
   ngOnInit() { this.load(); }
 
-  load() { this.loanService.getLoanById(this.id).subscribe(d => this.loan.set(d)); }
+  load() {
+    this.error.set(null);
+    this.loanService.getLoanById(this.id).subscribe({
+      next: (d) => this.loan.set(d),
+      error: (err) => {
+        console.error(err);
+        this.error.set('Failed to load loan details. Please try again.');
+      }
+    });
+  }
 
   submitPay() {
     if (this.paymentForm.valid) {

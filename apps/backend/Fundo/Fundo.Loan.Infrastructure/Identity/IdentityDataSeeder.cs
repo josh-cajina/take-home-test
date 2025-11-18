@@ -9,23 +9,28 @@ namespace Fundo.Loan.Infrastructure.Identity;
 
 public static class IdentityDataSeeder
 {
-    public static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
+    public static async Task SeedRolesAndUsersAsync(IServiceProvider serviceProvider)
     {
         using IServiceScope scope = serviceProvider.CreateScope();
-
         RoleManager<IdentityRole> roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        UserManager<ApplicationUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        AdminUserOptions adminOptions = scope.ServiceProvider.GetRequiredService<IOptions<AdminUserOptions>>().Value;
 
-        // Seed Roles
+        // 1. Create Roles
         await SeedRoleAsync(roleManager, Roles.Admin);
         await SeedRoleAsync(roleManager, Roles.Analyst);
         await SeedRoleAsync(roleManager, Roles.Requester);
 
-        // Seed Admin User
-        UserManager<ApplicationUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        AdminUserOptions adminOptions = scope.ServiceProvider.GetRequiredService<IOptions<AdminUserOptions>>().Value;
-        //ILogger<Program> logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>(); // Using Program for context
+        // 2. Create Admin
+        await SeedUserAsync(userManager, adminOptions.Email, adminOptions.Password, Roles.Admin);
 
-        await SeedAdminUserAsync(userManager, adminOptions);
+        // 3. Create Analysts
+        await SeedUserAsync(userManager, "analyst1@loanapp.com", "StrongPassword!123", Roles.Analyst);
+        await SeedUserAsync(userManager, "analyst2@loanapp.com", "StrongPassword!123", Roles.Analyst);
+
+        // 4. Create Requesters
+        await SeedUserAsync(userManager, "requester1@loanapp.com", "StrongPassword!123", Roles.Requester);
+        await SeedUserAsync(userManager, "requester2@loanapp.com", "StrongPassword!123", Roles.Requester);
     }
 
     private static async Task SeedRoleAsync(RoleManager<IdentityRole> roleManager, string roleName)
@@ -36,35 +41,22 @@ public static class IdentityDataSeeder
         }
     }
 
-    private static async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager, AdminUserOptions options)
+    private static async Task SeedUserAsync(UserManager<ApplicationUser> userManager, string email, string password, string role)
     {
-        if (options == null || string.IsNullOrWhiteSpace(options.Email))
+        ApplicationUser? user = await userManager.FindByEmailAsync(email);
+        if (user == null)
         {
-            //logger.LogWarning("AdminUser settings are not configured. Skipping admin user creation.");
-            return;
-        }
-
-        ApplicationUser? adminUser = await userManager.FindByEmailAsync(options.Email);
-
-        if (adminUser == null)
-        {
-            adminUser = new ApplicationUser
+            user = new ApplicationUser
             {
-                UserName = options.Email,
-                Email = options.Email,
+                UserName = email,
+                Email = email,
                 EmailConfirmed = true
             };
-
-            IdentityResult result = await userManager.CreateAsync(adminUser, options.Password);
+            IdentityResult result = await userManager.CreateAsync(user, password);
 
             if (result.Succeeded)
             {
-                await userManager.AddToRoleAsync(adminUser, Roles.Admin);
-                //logger.LogInformation("Admin user created successfully.");
-            }
-            else
-            {
-                //logger.LogError($"Failed to create admin user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                await userManager.AddToRoleAsync(user, role);
             }
         }
     }

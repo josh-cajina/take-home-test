@@ -15,4 +15,5 @@ public interface IIdentityService
     Task AddUserToRoleAsync(string userId, string roleName);
     Task<IList<string>> GetUserRolesAsync(string userId);
     Task<List<IdentityUserDto>> GetAllUsersAsync();
+    Task<string?> GetEmailAsync(string userId);
 }

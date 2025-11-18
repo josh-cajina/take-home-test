@@ -1,0 +1,64 @@
+<div class="container mx-auto max-w-lg py-10 px-4">
+  <div class="mb-6">
+    <button (click)="cancel()" class="btn btn-ghost btn-sm gap-2 pl-0 hover:bg-transparent text-base-content/70">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+      </svg>
+      Back to Users
+    </button>
+  </div>
+
+  <h2 class="text-3xl font-bold text-center mb-8">Edit User</h2>
+
+  <div class="card bg-base-100 shadow-xl border border-base-200">
+    @if (loading()) {
+      <div class="card-body flex justify-center items-center min-h-[300px]">
+        <span class="loading loading-spinner loading-lg"></span>
+      </div>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="card-body p-8 gap-6">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="form-control">
+            <label class="label pb-1"><span class="label-text font-semibold">First Name</span></label>
+            <input type="text" formControlName="firstName" class="input input-bordered w-full" />
+          </div>
+          <div class="form-control">
+            <label class="label pb-1"><span class="label-text font-semibold">Last Name</span></label>
+            <input type="text" formControlName="lastName" class="input input-bordered w-full" />
+          </div>
+        </div>
+
+        <div class="form-control">
+          <label class="label pb-1"><span class="label-text font-semibold">Email</span></label>
+          <input type="email" formControlName="email" class="input input-bordered w-full bg-base-200 cursor-not-allowed" readonly />
+        </div>
+
+        <div class="form-control">
+          <label class="label pb-1"><span class="label-text font-semibold">Address</span></label>
+          <input type="text" formControlName="address" class="input input-bordered w-full" />
+        </div>
+
+        <div class="form-control">
+          <label class="label pb-1"><span class="label-text font-semibold">Date of Birth</span></label>
+          <input type="date" formControlName="dateOfBirth" class="input input-bordered w-full" />
+        </div>
+
+        @if (successMsg()) {
+          <div role="alert" class="alert alert-success shadow-sm mt-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>{{ successMsg() }}</span>
+          </div>
+        }
+
+        <div class="card-actions justify-end mt-6 gap-3">
+          <button type="button" (click)="cancel()" class="btn btn-ghost">Cancel</button>
+          <button type="submit" class="btn btn-primary min-w-[120px]" [disabled]="form.invalid || isSubmitting()">
+            @if (isSubmitting()) { <span class="loading loading-spinner loading-xs"></span> }
+            Save
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>

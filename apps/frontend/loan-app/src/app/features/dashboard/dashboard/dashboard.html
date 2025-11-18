@@ -7,25 +7,47 @@
       </label>
       <span class="text-xl font-bold ml-2">Loan App</span>
     </div>
+
     <router-outlet />
   </div>
+
   <div class="drawer-side z-20">
     <label for="my-drawer" class="drawer-overlay"></label>
     <ul class="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
       <li class="text-2xl font-bold px-4 mb-4">Loan App</li>
+
       @if (auth.hasRole('Requester')) {
+        <li class="menu-title mt-2">Requester</li>
         <li><a routerLink="/dashboard/requester/my-loans" routerLinkActive="active">My Loans</a></li>
         <li><a routerLink="/dashboard/requester/new-loan" routerLinkActive="active">Request Loan</a></li>
       }
+
       @if (auth.hasRole('Analyst')) {
-        <li><a routerLink="/dashboard/analyst/unassigned" routerLinkActive="active">Unassigned</a></li>
-        <li><a routerLink="/dashboard/analyst/assigned" routerLinkActive="active">My Queue</a></li>
+         <li class="menu-title mt-2">Analyst</li>
+         <li><a routerLink="/dashboard/analyst/unassigned" routerLinkActive="active">Unassigned</a></li>
+         <li><a routerLink="/dashboard/analyst/assigned" routerLinkActive="active">My Queue</a></li>
       }
+
       @if (auth.hasRole('Admin')) {
-        <li><a routerLink="/dashboard/admin/user-management" routerLinkActive="active">Users</a></li>
+         <li class="menu-title mt-2">Admin</li>
+         <li><a routerLink="/dashboard/admin/user-management" routerLinkActive="active">Users</a></li>
       }
+
       <div class="divider"></div>
-      <li><button (click)="auth.logout()">Logout</button></li>
+
+      <li>
+        <a routerLink="/dashboard/profile" routerLinkActive="active">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+          Edit Profile
+        </a>
+      </li>
+
+      <li>
+        <button (click)="auth.logout()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+          Logout
+        </button>
+      </li>
     </ul>
   </div>
 </div>

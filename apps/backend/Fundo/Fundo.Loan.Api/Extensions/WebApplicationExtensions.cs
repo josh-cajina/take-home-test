@@ -20,20 +20,27 @@ public static class WebApplicationExtensions
 
         try
         {
+            // 1. Migrate Application Context (Loans, AppUsers, etc.)
             logger.LogInformation("Applying ApplicationDb migrations...");
             ApplicationDbContext appDbContext = services.GetRequiredService<ApplicationDbContext>();
             await appDbContext.Database.MigrateAsync();
             logger.LogInformation("ApplicationDb migrations applied.");
 
+            // 2. Migrate Identity Context (AspNetUsers, Roles)
             logger.LogInformation("Applying IdentityDb migrations...");
             AppIdentityDbContext identityDbContext = services.GetRequiredService<AppIdentityDbContext>();
             await identityDbContext.Database.MigrateAsync();
             logger.LogInformation("IdentityDb migrations applied.");
 
-            // --- SEEDING ---
-            logger.LogInformation("Seeding initial data...");
-            await IdentityDataSeeder.SeedRolesAndAdminAsync(services);
-            logger.LogInformation("Seeding complete.");
+            // 3. Seed Identity Data (Users & Roles)
+            logger.LogInformation("Seeding Identity data...");
+            await IdentityDataSeeder.SeedRolesAndUsersAsync(services);
+            logger.LogInformation("Identity seeding complete.");
+
+            // 4. Seed Application Data (Loans, History, Payments)
+            logger.LogInformation("Seeding Application data...");
+            await ApplicationDataSeeder.SeedSampleDataAsync(services);
+            logger.LogInformation("Application data seeding complete.");
         }
         catch (Exception ex)
         {

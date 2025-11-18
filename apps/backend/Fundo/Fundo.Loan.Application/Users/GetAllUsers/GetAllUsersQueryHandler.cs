@@ -11,38 +11,46 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, List<Us
 {
     private readonly IIdentityService _identityService;
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService; // <-- NEW
 
-    public GetAllUsersQueryHandler(IIdentityService identityService, IApplicationDbContext context)
+    public GetAllUsersQueryHandler(
+        IIdentityService identityService,
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService) // <-- NEW
     {
         _identityService = identityService;
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<List<UserDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
     {
-        // 1. Get all Identity users (Email, Roles)
+        // 1. Get current user ID to exclude
+        string currentIdentityId = _currentUserService.IdentityId;
+
+        // 2. Get all Identity users
         List<IdentityUserDto> identityUsers = await _identityService.GetAllUsersAsync();
 
-        // 2. Get all AppUser profiles (FirstName, LastName)
+        // 3. Filter out the current user
+        identityUsers = identityUsers.Where(u => u.Id != currentIdentityId).ToList();
+
+        // 4. Get profiles
         List<AppUser> appUsers = await _context.AppUsers
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
-        // 3. Create a lookup for efficient joining
         var appUserMap = appUsers.ToDictionary(u => u.IdentityId, u => u);
 
-        // 4. Join the two lists
+        // 5. Map
         var userDtos = identityUsers.Select(identityUser =>
         {
-            // Find the matching profile
-            appUserMap.TryGetValue(identityUser.Id, out AppUser appUser);
+            appUserMap.TryGetValue(identityUser.Id, out AppUser? appUser);
 
             return new UserDto
             {
                 IdentityId = identityUser.Id,
                 Email = identityUser.Email,
                 Roles = identityUser.Roles,
-                // Handle cases where an Identity user might not have an AppUser profile yet
                 AppUserId = appUser?.Id ?? Guid.Empty,
                 FirstName = appUser?.FirstName ?? "N/A",
                 LastName = appUser?.LastName ?? "N/A"

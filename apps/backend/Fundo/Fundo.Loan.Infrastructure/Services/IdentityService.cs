@@ -102,4 +102,10 @@ public class IdentityService : IIdentityService
 
         return userDtos;
     }
+
+    public async Task<string?> GetEmailAsync(string userId)
+    {
+        ApplicationUser? user = await _userManager.FindByIdAsync(userId);
+        return user?.Email;
+    }
 }

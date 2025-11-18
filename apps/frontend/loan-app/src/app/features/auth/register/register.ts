@@ -14,24 +14,47 @@ import { AuthService } from '../../../core/services/auth';
 })
 export class Register {
   private fb = inject(FormBuilder);
-  private auth = inject(AuthService);
+  private authService = inject(AuthService);
   private router = inject(Router);
 
-  error = signal('');
-  form = this.fb.group({
+  protected isSubmitting = signal(false);
+  protected errorMessage = signal<string | null>(null);
+
+  protected form = this.fb.group({
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
-    role: ['Requester', Validators.required]
+    password: ['', [
+      Validators.required,
+      Validators.minLength(8),
+      Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+    ]],
+    role: ['Requester', Validators.required] // Default to Requester
   });
 
-  onSubmit() {
-    if (this.form.valid) {
-      this.auth.register(this.form.value).subscribe({
-        next: () => this.router.navigate(['/dashboard']),
-        error: () => this.error.set('Registration failed')
-      });
+  protected isFieldInvalid(fieldName: string): boolean {
+    const field = this.form.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
+  protected onSubmit() {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.errorMessage.set('Please correct the errors in the form.');
+      return;
     }
+
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+
+    this.authService.register(this.form.value).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        this.errorMessage.set(err.error?.message || 'Registration failed. Please try again.');
+      }
+    });
   }
 }

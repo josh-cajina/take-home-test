@@ -2,9 +2,11 @@
 using Fundo.Loan.Application.Users.Common;
 using Fundo.Loan.Application.Users.Dtos;
 using Fundo.Loan.Application.Users.GetAllUsers;
+using Fundo.Loan.Application.Users.GetProfile;
 using Fundo.Loan.Application.Users.LoginUser;
 using Fundo.Loan.Application.Users.LogoutUser;
 using Fundo.Loan.Application.Users.RegisterUser;
+using Fundo.Loan.Application.Users.UpdateProfile;
 using Fundo.Loan.Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -60,5 +62,44 @@ public class UsersController : ControllerBase
     {
         List<UserDto> users = await _mediator.Send(new GetAllUsersQuery());
         return Ok(users);
+    }
+
+    [HttpGet("profile")]
+    [Authorize]
+    [ProducesResponseType(typeof(UserProfileDto), 200)]
+    public async Task<IActionResult> GetProfile()
+    {
+        UserProfileDto profile = await _mediator.Send(new GetProfileQuery());
+        return Ok(profile);
+    }
+
+    [HttpPut("profile")]
+    [Authorize]
+    [ProducesResponseType(204)]
+    public async Task<IActionResult> UpdateProfile(UpdateProfileCommand command)
+    {
+        // Ensure we don't accidentally overwrite someone else if the payload is malicious
+        command.AppUserId = null;
+        await _mediator.Send(command);
+        return NoContent();
+    }
+
+    [HttpGet("{id:guid}")]
+    [Authorize(Roles = Roles.Admin)]
+    [ProducesResponseType(typeof(UserProfileDto), 200)]
+    public async Task<IActionResult> GetUserById(Guid id)
+    {
+        UserProfileDto profile = await _mediator.Send(new GetProfileQuery { AppUserId = id });
+        return Ok(profile);
+    }
+
+    [HttpPut("{id:guid}")]
+    [Authorize(Roles = Roles.Admin)]
+    [ProducesResponseType(204)]
+    public async Task<IActionResult> AdminUpdateUser(Guid id, UpdateProfileCommand command)
+    {
+        command.AppUserId = id;
+        await _mediator.Send(command);
+        return NoContent();
     }
 }

@@ -1,20 +1,80 @@
-<h2 class="text-2xl font-bold mb-6">New Loan Request</h2>
-<div class="card bg-base-100 max-w-lg shadow-xl">
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="card-body">
-    <div class="form-control">
-      <label class="label">Amount</label>
-      <input type="number" formControlName="requestedAmount" class="input input-bordered" />
+<div class="container mx-auto max-w-2xl px-4 py-6">
+
+  <div class="mb-6">
+    <a routerLink="../my-loans" class="btn btn-ghost btn-sm gap-2 pl-0 hover:bg-transparent">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+      </svg>
+      Back to My Loans
+    </a>
+  </div>
+
+  <div class="card bg-base-100 shadow-2xl border border-base-300">
+    <div class="card-body">
+      <h2 class="card-title text-3xl mb-2">Request a Loan</h2>
+      <p class="text-base-content/70 mb-6">Fill out the details below to submit your application for review.</p>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Loan Amount</span>
+          </label>
+          <label class="input input-bordered flex items-center gap-2" [class.input-error]="isFieldInvalid('requestedAmount')">
+            <span class="text-base-content/50 font-bold">$</span>
+            <input type="number" formControlName="requestedAmount" placeholder="0.00" class="grow border-none focus:ring-0 p-0" />
+          </label>
+          @if (isFieldInvalid('requestedAmount')) {
+            <label class="label"><span class="label-text-alt text-error">Amount is required (min $100)</span></label>
+          }
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Repayment Term</span>
+          </label>
+          <label class="input input-bordered flex items-center gap-2" [class.input-error]="isFieldInvalid('termInMonths')">
+            <input type="number" formControlName="termInMonths" placeholder="12" class="grow border-none focus:ring-0 p-0" />
+            <span class="badge badge-neutral badge-sm">Months</span>
+          </label>
+           @if (isFieldInvalid('termInMonths')) {
+            <label class="label"><span class="label-text-alt text-error">Term must be at least 1 month</span></label>
+          }
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Purpose of Loan</span>
+          </label>
+          <textarea formControlName="purpose" class="textarea textarea-bordered h-32 text-base leading-relaxed"
+            placeholder="Describe why you need this loan..." [class.textarea-error]="isFieldInvalid('purpose')"></textarea>
+          @if (isFieldInvalid('purpose')) {
+            <label class="label"><span class="label-text-alt text-error">Please provide a reason for the loan</span></label>
+          }
+        </div>
+
+        @if (errorMessage()) {
+          <div role="alert" class="alert alert-error mt-4 shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        @if (successMessage()) {
+          <div role="alert" class="alert alert-success mt-4 shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>{{ successMessage() }}</span>
+          </div>
+        }
+
+        <div class="card-actions justify-end mt-8 flex gap-3">
+          <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+          <button type="submit" class="btn btn-primary px-8" [disabled]="form.invalid || isSubmitting()">
+            @if (isSubmitting()) { <span class="loading loading-spinner loading-xs"></span> }
+            Submit Application
+          </button>
+        </div>
+      </form>
     </div>
-    <div class="form-control">
-      <label class="label">Term (Months)</label>
-      <input type="number" formControlName="termInMonths" class="input input-bordered" />
-    </div>
-    <div class="form-control">
-      <label class="label">Purpose</label>
-      <textarea formControlName="purpose" class="textarea textarea-bordered"></textarea>
-    </div>
-    <div class="card-actions justify-end mt-4">
-      <button class="btn btn-primary" [disabled]="form.invalid">Submit</button>
-    </div>
-  </form>
+  </div>
 </div>

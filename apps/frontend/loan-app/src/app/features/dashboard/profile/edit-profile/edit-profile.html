@@ -1,0 +1,50 @@
+<div class="container mx-auto max-w-lg py-10 px-4">
+  <h2 class="text-3xl font-bold text-center mb-8">Edit Profile</h2>
+
+  <div class="card bg-base-100 shadow-xl border border-base-200">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="card-body p-8 gap-6">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="form-control">
+          <label class="label pb-1"><span class="label-text font-semibold">First Name</span></label>
+          <input type="text" formControlName="firstName" class="input input-bordered w-full" />
+        </div>
+        <div class="form-control">
+          <label class="label pb-1"><span class="label-text font-semibold">Last Name</span></label>
+          <input type="text" formControlName="lastName" class="input input-bordered w-full" />
+        </div>
+      </div>
+
+      <div class="form-control">
+        <label class="label pb-1"><span class="label-text font-semibold">Email</span></label>
+        <input type="email" formControlName="email" class="input input-bordered w-full bg-base-200 text-base-content/70 cursor-not-allowed" readonly />
+        <div class="label pt-1"><span class="label-text-alt opacity-60">Email cannot be changed</span></div>
+      </div>
+
+      <div class="form-control">
+        <label class="label pb-1"><span class="label-text font-semibold">Address</span></label>
+        <input type="text" formControlName="address" class="input input-bordered w-full" />
+      </div>
+
+      <div class="form-control">
+        <label class="label pb-1"><span class="label-text font-semibold">Date of Birth</span></label>
+        <input type="date" formControlName="dateOfBirth" class="input input-bordered w-full" />
+      </div>
+
+      @if (successMsg()) {
+        <div role="alert" class="alert alert-success shadow-sm mt-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span>{{ successMsg() }}</span>
+        </div>
+      }
+
+      <div class="card-actions justify-center mt-6">
+        <button type="submit" class="btn btn-primary w-full sm:w-auto min-w-[200px]" [disabled]="form.invalid || isSubmitting()">
+          @if (isSubmitting()) { <span class="loading loading-spinner loading-xs"></span> }
+          Save Changes
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
